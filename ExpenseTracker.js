@@ -59,8 +59,8 @@ function showOnScreen(expense){
     text = document.createTextNode(expense.amount + " " +  expense.description + " " + expense.type);
     li.appendChild(text);
 
-    delHtml = `<input type = 'button' class = 'btn btn-danger' value = 'delete' onclick = "deleteExpense('${expense.type}')">`
-    editHtml = `<input type = 'button' class = 'btn btn-success' value = 'edit' onclick = "editExpense('${expense.amount}','${expense.description}','${expense.type}')">`
+    delHtml = `<input type = 'button' class = 'btn btn-danger btn-sm float-right' value = 'delete' onclick = "deleteExpense('${expense.type}')">`
+    editHtml = `<input type = 'button' class = 'btn btn-success btn-sm float-right' value = 'edit' onclick = "editExpense('${expense.amount}','${expense.description}','${expense.type}')">`
 
     li.innerHTML = li.innerHTML + delHtml + editHtml;
 
