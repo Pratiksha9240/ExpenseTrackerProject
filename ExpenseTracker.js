@@ -1,3 +1,7 @@
+axiosInstance = axios.create({
+    baseURL: 'https://crudcrud.com/api/815a9659a64c49c9b0074be62cd0635e'
+});
+
 myForm = document.getElementById('myForm');
 amount = document.getElementById('amt');
 description = document.getElementById('desc');
@@ -8,23 +12,19 @@ msg = document.getElementById('errorMsg');
 myForm.addEventListener('submit',addExpense);
 
 window.addEventListener("DOMContentLoaded", () => {
-    const localStorageObj = localStorage;
-    const localstoragekeys  = Object.keys(localStorageObj)
 
-    for(var i =0; i< localstoragekeys.length; i++){
-        const key = localstoragekeys[i]
-        const ExpenseString = localStorageObj[key];
-        const ExpenseObj = JSON.parse(ExpenseString);
-        console.log(ExpenseObj);
+    //get request to crudcrud.com
 
-        const expense = {
-            amount : ExpenseObj.amount,
-            description : ExpenseObj.description,
-            type : ExpenseObj.type
-        }
-        showOnScreen(expense);
-        
-    }
+    axiosInstance.get('/expenses')
+                .then((res) => {
+                    // console.log(res.data)
+                    for(var i=0;i<res.data.length;i++){
+                        showOnScreen(res.data[i]);
+                    }
+                    
+                }).catch(err => {
+                    console.log(err)
+                })
 })
 
 function addExpense(e){
@@ -39,12 +39,22 @@ function addExpense(e){
         const expense = {
             amount : amount.value,
             description : description.value,
-            type : type.value
+            type : type.value,
         }
         
         localStorage.setItem(expense.type,JSON.stringify(expense));
+
+        //Post request to crudcrud.com
+
+        axiosInstance.post(
+            '/expenses',expense
+        ).then(res => {
+            // console.log(res._id)
+            showOnScreen(res.data)}).catch(err => {
+            console.log(err)
+        })
     
-        showOnScreen(expense);
+        
     
         amount.value = "";
         description.value = "";
@@ -55,31 +65,61 @@ function addExpense(e){
 
 function showOnScreen(expense){
     var li = document.createElement('li');
-    li.id = `${expense.type}`;
+    li.id = `${expense._id}`;
     text = document.createTextNode(expense.amount + " " +  expense.description + " " + expense.type);
     li.appendChild(text);
 
-    delHtml = `<input type = 'button' class = 'btn btn-danger btn-sm float-right' value = 'delete' onclick = "deleteExpense('${expense.type}')">`
-    editHtml = `<input type = 'button' class = 'btn btn-success btn-sm float-right' value = 'edit' onclick = "editExpense('${expense.amount}','${expense.description}','${expense.type}')">`
+    delHtml = `<input type = 'button' class = 'btn btn-danger btn-sm float-right' value = 'delete' onclick = "deleteExpense('${expense._id}')">`
+    editHtml = `<input type = 'button' class = 'btn btn-success btn-sm float-right' value = 'edit' onclick = "editExpense('${expense._id}','${expense.amount}','${expense.description}','${expense.type}')">`
 
     li.innerHTML = li.innerHTML + delHtml + editHtml;
 
     expenses.appendChild(li);
 }
 
-function deleteExpense(type){
-    localStorage.removeItem(type);
-    var child = document.getElementById(type);
+function deleteExpense(expenseId){
+    // localStorage.removeItem(type);
+
+
+    //delete request to crudcrud.com
+
+    axiosInstance.delete(`/expenses/${expenseId}`)
+    .then(res => console.log(res))
+    .catch(err => {
+        console.log(err)
+    })
+
+    var child = document.getElementById(expenseId);
     parent = document.getElementById('list');
     if(child){
         parent.removeChild(child);
     }
 }
 
-function editExpense(amount,description,type){
-    document.getElementById('amt').value = amount;
-    document.getElementById('desc').value = description;
-    document.getElementById('type').value = type;
+function editExpense(expenseId,amount1,description1,type1){
+    
+    const amount = event.target.amount;
+    const description = event.target.description;
+    const type = event.target.type;
+                
+    const expenseObj = 
+    {
+        amount,
+        description,
+        type
+    }
 
-    deleteExpense(type);
+    // update request to crudcrud.com
+
+    axiosInstance.put(`/expenses/${expenseId}`,expenseObj)
+    .then(res => {
+        document.getElementById('amt').value = amount1;
+        document.getElementById('desc').value = description1;
+        document.getElementById('type').value = type1;
+
+        deleteExpense(expenseId);
+    })
+    .catch(err => {
+        console.log(err)
+    })
 }
