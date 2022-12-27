@@ -1,5 +1,5 @@
 axiosInstance = axios.create({
-    baseURL: 'https://crudcrud.com/api/815a9659a64c49c9b0074be62cd0635e'
+    baseURL: 'https://crudcrud.com/api/91f5cfc5018548f59d42ee55da09b285'
 });
 
 myForm = document.getElementById('myForm');
@@ -9,26 +9,25 @@ type = document.getElementById('type');
 expenses = document.getElementById('list');
 msg = document.getElementById('errorMsg');
 
-myForm.addEventListener('submit',addExpense);
 
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async() => {
 
     //get request to crudcrud.com
 
-    axiosInstance.get('/expenses')
-                .then((res) => {
-                    // console.log(res.data)
-                    for(var i=0;i<res.data.length;i++){
-                        showOnScreen(res.data[i]);
-                    }
-                    
-                }).catch(err => {
-                    console.log(err)
-                })
+    try{
+        const res = await axiosInstance.get('/expenses')
+        for(var i=0;i<res.data.length;i++){
+            showOnScreen(res.data[i]);
+        }
+    }
+    catch(err){
+        console.log(err)
+    }
+    
 })
 
-function addExpense(e){
-    e.preventDefault();
+addExpense = async() => {
+    // e.preventDefault();
 
     if(amount.value === '' || description.value === '' || type.value === ''){
         msg.style.color = 'red';
@@ -45,14 +44,16 @@ function addExpense(e){
         localStorage.setItem(expense.type,JSON.stringify(expense));
 
         //Post request to crudcrud.com
-
-        axiosInstance.post(
-            '/expenses',expense
-        ).then(res => {
-            // console.log(res._id)
-            showOnScreen(res.data)}).catch(err => {
-            console.log(err)
-        })
+        try{
+            const res = await axiosInstance.post(
+                '/expenses',expense
+            )
+            showOnScreen(res.data);
+        }
+        catch(err){
+            console.log(err);
+        }
+        
     
         
     
@@ -77,17 +78,21 @@ function showOnScreen(expense){
     expenses.appendChild(li);
 }
 
-function deleteExpense(expenseId){
+async function deleteExpense(expenseId){
     // localStorage.removeItem(type);
 
 
     //delete request to crudcrud.com
 
-    axiosInstance.delete(`/expenses/${expenseId}`)
-    .then(res => console.log(res))
-    .catch(err => {
+    try{
+        const res = await axiosInstance.delete(`/expenses/${expenseId}`);
+        console.log(res);
+        
+    }
+    catch(err){
         console.log(err)
-    })
+    }
+    
 
     var child = document.getElementById(expenseId);
     parent = document.getElementById('list');
@@ -96,7 +101,7 @@ function deleteExpense(expenseId){
     }
 }
 
-function editExpense(expenseId,amount1,description1,type1){
+async function editExpense(expenseId,amount1,description1,type1){
     
     const amount = event.target.amount;
     const description = event.target.description;
@@ -111,15 +116,15 @@ function editExpense(expenseId,amount1,description1,type1){
 
     // update request to crudcrud.com
 
-    axiosInstance.put(`/expenses/${expenseId}`,expenseObj)
-    .then(res => {
-        document.getElementById('amt').value = amount1;
-        document.getElementById('desc').value = description1;
-        document.getElementById('type').value = type1;
-
-        deleteExpense(expenseId);
-    })
-    .catch(err => {
+    try{
+        const res = await axiosInstance.put(`/expenses/${expenseId}`,expenseObj)
+            document.getElementById('amt').value = amount1;
+            document.getElementById('desc').value = description1;
+            document.getElementById('type').value = type1;
+    
+            deleteExpense(expenseId);
+    }
+    catch(err){
         console.log(err)
-    })
+    }
 }
